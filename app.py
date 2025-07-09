@@ -11,10 +11,15 @@ if st.button("Pesquisar"):
     if consulta:
         st.info("Buscando...")
         parametros = extrair_parametros(consulta)
-        media = buscar_preco_medio(parametros)
+        resultado = buscar_preco_medio(parametros)
 
-        if media:
-            st.success(f"💰 Preço médio estimado: **R$ {media:.2f}**")
+        if resultado["media"]:
+            st.success(f"💰 Preço médio estimado: **R$ {resultado['media']:.2f}**")
+            st.markdown(
+                f"**Extrato da busca:**\n"
+                f"- Sites com preços utilizados: **{resultado['num_sites']}**\n"
+                f"- Preços analisados: **{resultado['num_precos']}**"
+            )
         else:
             st.warning("Nenhum resultado encontrado.")
     else:
