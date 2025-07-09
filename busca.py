@@ -1,7 +1,7 @@
 import requests
 import re
 
-SERPAPI_KEY = "SUA_CHAVE_SERPAPI"  # Substitua pela sua chave do SerpApi
+SERPAPI_KEY = "08e9a89ad2a3b99de69509d6661c5382c19182c4e20efeb32cb95a4deb5443b4"  # Substitua pela sua chave do SerpApi
 
 REGEX_PRECO = r"R\$ ?\d{1,3}(?:\.\d{3})*,\d{2}"
 
