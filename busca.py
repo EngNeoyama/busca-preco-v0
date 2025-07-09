@@ -1,25 +1,30 @@
 import requests
 from bs4 import BeautifulSoup
 
-def buscar_produtos(parametros):
-    termo = parametros["termo"].replace(" ", "-")
+def buscar_preco_medio(parametros):
+    termo = parametros["termo"].lower().replace(" ", "-")
     preco_max = parametros["preco_max"]
     url = f"https://lista.mercadolivre.com.br/{termo}"
 
     headers = {"User-Agent": "Mozilla/5.0"}
-    r = requests.get(url, headers=headers)
-    soup = BeautifulSoup(r.text, "html.parser")
+    try:
+        r = requests.get(url, headers=headers, timeout=10)
+        soup = BeautifulSoup(r.text, "html.parser")
+    except:
+        return None
 
-    resultados = []
+    precos = []
     for item in soup.select(".ui-search-result__content"):
         try:
-            nome = item.select_one("h2").text.strip()
             preco_text = item.select_one(".price-tag-fraction").text.replace(".", "")
             preco = int(preco_text)
-            link = item.find("a")["href"]
             if not preco_max or preco <= preco_max:
-                resultados.append({"nome": nome, "preco": preco, "link": link})
+                precos.append(preco)
         except:
             continue
 
-    return resultados[:5]
+    if precos:
+        media = sum(precos) / len(precos)
+        return round(media, 2)
+    else:
+        return None
