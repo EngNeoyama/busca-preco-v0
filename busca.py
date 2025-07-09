@@ -41,6 +41,7 @@ def buscar_preco_medio(parametros):
     links = buscar_links_serpapi(termo)
     todos_precos = []
     sites_com_precos = set()
+    urls_com_precos = []
     for link in links:
         try:
             r = requests.get(link, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
@@ -51,6 +52,7 @@ def buscar_preco_medio(parametros):
                     precos = [p for p in precos if p <= preco_max]
                 if precos:
                     sites_com_precos.add(link)
+                    urls_com_precos.append(link)
                 todos_precos += precos
         except Exception as e:
             print(f"Erro ao acessar {link}: {e}")
@@ -63,5 +65,6 @@ def buscar_preco_medio(parametros):
     return {
         "media": round(media, 2) if media else None,
         "num_sites": len(sites_com_precos),
-        "num_precos": len(todos_precos)
+        "num_precos": len(todos_precos),
+        "urls": urls_com_precos
     }
