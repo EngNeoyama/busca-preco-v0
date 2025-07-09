@@ -1,30 +1,49 @@
 import requests
+import re
 from bs4 import BeautifulSoup
+from duckduckgo_search import DDGS
+
+# Regex para encontrar preços em formato brasileiro
+REGEX_PRECO = r"R\$ ?\d{1,3}(?:\.\d{3})*,\d{2}"
+
+def buscar_links_duckduckgo(termo, max_resultados=6):
+    links = []
+    with DDGS() as ddgs:
+        for r in ddgs.text(termo, max_results=max_resultados):
+            # Preferir sites conhecidos de e-commerce, mas pode pegar qualquer um
+            links.append(r['href'])
+    return links
+
+def extrair_precos_html(html):
+    precos = re.findall(REGEX_PRECO, html)
+    precos_float = []
+    for preco in precos:
+        valor = preco.replace("R$", "").replace(".", "").replace(",", ".").strip()
+        try:
+            precos_float.append(float(valor))
+        except Exception:
+            continue
+    return precos_float
 
 def buscar_preco_medio(parametros):
-    termo = parametros["termo"].lower().replace(" ", "-")
-    preco_max = parametros["preco_max"]
-    url = f"https://lista.mercadolivre.com.br/{termo}"
-
-    headers = {"User-Agent": "Mozilla/5.0"}
-    try:
-        r = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(r.text, "html.parser")
-    except:
-        return None
-
-    precos = []
-    for item in soup.select(".ui-search-result__content"):
+    termo = parametros["termo"]
+    preco_max = parametros.get("preco_max")
+    links = buscar_links_duckduckgo(termo)
+    todos_precos = []
+    for link in links:
         try:
-            preco_text = item.select_one(".price-tag-fraction").text.replace(".", "")
-            preco = int(preco_text)
-            if not preco_max or preco <= preco_max:
-                precos.append(preco)
-        except:
+            r = requests.get(link, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+            if r.status_code == 200:
+                html = r.text
+                precos = extrair_precos_html(html)
+                # Se quiser filtrar por preço máximo:
+                if preco_max:
+                    precos = [p for p in precos if p <= preco_max]
+                todos_precos += precos
+        except Exception as e:
+            print(f"Erro ao acessar {link}: {e}")
             continue
-
-    if precos:
-        media = sum(precos) / len(precos)
+    if todos_precos:
+        media = sum(todos_precos) / len(todos_precos)
         return round(media, 2)
-    else:
-        return None
+    return None
