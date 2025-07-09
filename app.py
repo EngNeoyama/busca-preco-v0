@@ -20,6 +20,9 @@ if st.button("Pesquisar"):
                 f"- Sites com preços utilizados: **{resultado['num_sites']}**\n"
                 f"- Preços analisados: **{resultado['num_precos']}**"
             )
+            st.markdown("**Lista de sites utilizados:**")
+            for url in resultado["urls"]:
+                st.markdown(f"- [{url}]({url})")
         else:
             st.warning("Nenhum resultado encontrado.")
     else:
