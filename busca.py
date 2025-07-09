@@ -29,20 +29,25 @@ def buscar_preco_medio(parametros):
     termo = parametros["termo"]
     preco_max = parametros.get("preco_max")
     links = buscar_links_duckduckgo(termo)
+    print("Links encontrados:", links)  # LOG
     todos_precos = []
     for link in links:
         try:
+            print(f"Buscando preços em: {link}")  # LOG
             r = requests.get(link, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
             if r.status_code == 200:
                 html = r.text
                 precos = extrair_precos_html(html)
-                # Se quiser filtrar por preço máximo:
+                print(f"Preços encontrados em {link}: {precos}")  # LOG
                 if preco_max:
                     precos = [p for p in precos if p <= preco_max]
                 todos_precos += precos
+            else:
+                print(f"Falha ao acessar {link}: {r.status_code}")  # LOG
         except Exception as e:
             print(f"Erro ao acessar {link}: {e}")
             continue
+    print("Todos os preços encontrados:", todos_precos)
     if todos_precos:
         media = sum(todos_precos) / len(todos_precos)
         return round(media, 2)
